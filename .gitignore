@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnp.*
+
+# pnpm
+pnpm-debug.log*
+
+# Turbo
+.turbo/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.env.*
+!.env.example
+.dev.vars*
+!.dev.vars.example
+
+# Cloudflare
+.wrangler/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Vercel
+.vercel/
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+*.log
+*.pem

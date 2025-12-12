@@ -1,0 +1,58 @@
+import { ApiException, fromHono } from "chanfana";
+import { Hono } from "hono";
+import { tasksRouter } from "./endpoints/tasks/router";
+import { youtubeRouter } from "./endpoints/youtube/router";
+import { transcriptsRouter } from "./endpoints/transcripts/router";
+import { ContentfulStatusCode } from "hono/utils/http-status";
+import { DummyEndpoint } from "./endpoints/dummyEndpoint";
+
+// Start a Hono app
+const app = new Hono<{ Bindings: Env }>();
+
+app.onError((err, c) => {
+	if (err instanceof ApiException) {
+		// If it's a Chanfana ApiException, let Chanfana handle the response
+		return c.json(
+			{ success: false, errors: err.buildResponse() },
+			err.status as ContentfulStatusCode,
+		);
+	}
+
+	console.error("Global error handler caught:", err); // Log the error if it's not known
+
+	// For other errors, return a generic 500 response
+	return c.json(
+		{
+			success: false,
+			errors: [{ code: 7000, message: "Internal Server Error" }],
+		},
+		500,
+	);
+});
+
+// Setup OpenAPI registry
+const openapi = fromHono(app, {
+	docs_url: "/",
+	schema: {
+		info: {
+			title: "YouTube Edge API",
+			version: "1.0.0",
+			description: "Edge-cached YouTube metadata and captions API powered by Cloudflare Workers. Proxies requests to the YouTube Tools API with KV caching for fast global delivery.",
+		},
+	},
+});
+
+// Register Tasks Sub router
+openapi.route("/tasks", tasksRouter);
+
+// Register YouTube Sub router (with caching)
+openapi.route("/youtube", youtubeRouter);
+
+// Register Transcripts Sub router (persistent D1 storage)
+openapi.route("/transcripts", transcriptsRouter);
+
+// Register other endpoints
+openapi.post("/dummy/:slug", DummyEndpoint);
+
+// Export the Hono app
+export default app;
